@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "dad-app",
+    "slug": "dad-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F09281"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourdomain.dadapp",
+      "buildNumber": "20",
+      "jsEngine": "hermes",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "remote-notification",
+          "audio"
+        ],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio recording and playback",
+        "NSCameraUsageDescription": "This app needs access to the camera for video recording",
+        "UIBackgroundModes": ["audio", "remote-notification"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourdomain.dadapp"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "853783a7-ce98-4ce5-968b-89f6ca471a08"
+      }
+    }
+  }
+}

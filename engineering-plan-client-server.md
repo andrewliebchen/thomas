@@ -21,6 +21,7 @@ This document outlines the engineering plan to refactor Dadbot into a true clien
 - **Identify business logic** (e.g., prompt handling, memory, personality) in the Expo app (`app/`).
 - **Move all business logic** to the server (`server/`).
 - **Ensure the client** only handles UI and API calls.
+- **Status:** ✅ Complete. All business logic, memory, and persistence have been removed from the client. The client is now a thin UI that only sends/receives messages via the `/chat` API. All client screens have been refactored to remove local business logic and persistence.
 
 ### 2. Define and Implement the `/chat` API
 - **Server:**

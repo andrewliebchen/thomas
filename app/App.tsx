@@ -9,14 +9,12 @@ import { TouchableOpacity, ActivityIndicator, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { getDatabase } from '@/src/services/database';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
-import { DatabaseInitializer } from '@/src/components/DatabaseInitializer';
 import { MenuProvider } from '@/src/context/MenuContext';
 import { MenuSheet } from '@/src/components/MenuSheet';
 import { useMenu } from '@/src/context/MenuContext';
@@ -43,18 +41,9 @@ function AppNavigator() {
 
   const handleNewThread = async () => {
     try {
-      const db = await getDatabase();
       const threadId = uuidv4();
       const now = Date.now();
       
-      // Create the thread first
-      await db.createThread({
-        id: threadId,
-        title: 'New Chat',
-        createdAt: now,
-        lastMessageAt: now,
-      });
-
       // Navigate to the new chat
       navigation.navigate('Chat', { threadId });
     } catch (error) {
@@ -119,10 +108,7 @@ export default function App() {
           <ThemeProvider>
             <NavigationContainer>
               <MenuProvider>
-                <DatabaseInitializer>
-                  <AppNavigator />
-                </DatabaseInitializer>
-                <StatusBar style="auto" />
+                <AppNavigator />
               </MenuProvider>
             </NavigationContainer>
           </ThemeProvider>

@@ -9,7 +9,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { getDatabase } from '../services/database';
 
 type TabParamList = {
   Threads: undefined;
@@ -30,24 +29,7 @@ export function ListScreen() {
   const navigation = useNavigation<ListScreenNavigationProp>();
 
   const handleNewThread = async () => {
-    try {
-      const db = await getDatabase();
-      const threadId = uuidv4();
-      const now = Date.now();
-      
-      // Create the thread first
-      await db.createThread({
-        id: threadId,
-        title: 'New Chat',
-        createdAt: now,
-        lastMessageAt: now,
-      });
-
-      // Navigate to the new chat
-      navigation.navigate('Chat', { threadId });
-    } catch (error) {
-      console.error('Error creating new thread:', error);
-    }
+    Alert.alert('Info', 'Threads are now managed by the server.');
   };
 
   useEffect(() => {

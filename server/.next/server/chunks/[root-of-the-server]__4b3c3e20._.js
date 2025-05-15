@@ -644,18 +644,20 @@ var __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$ex
 ;
 ;
 ;
-const HARDCODED_TOKEN = 'my_hardcoded_token'; // TODO: Replace with env var or config in future
+// Replace hardcoded token with environment variable
+const HARDCODED_TOKEN = process.env.CHAT_API_AUTH_TOKEN;
+if (!HARDCODED_TOKEN) {
+    throw new Error('CHAT_API_AUTH_TOKEN environment variable is not set');
+}
 const prisma = new __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PrismaClient"]();
 async function POST(req) {
     try {
+        console.log('[POST /chat] Request received');
         const body = await req.json();
         const { auth_token, message } = body;
-        console.log('[POST /chat] Incoming:', {
-            auth_token,
-            message
-        });
+        console.log('[POST /chat] Incoming body:', body);
         if (auth_token !== HARDCODED_TOKEN) {
-            console.warn('[POST /chat] Invalid auth token:', auth_token);
+            console.warn('[POST /chat] Invalid auth token:', auth_token, 'Expected:', HARDCODED_TOKEN);
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'Unauthorized'
             }, {
@@ -664,6 +666,7 @@ async function POST(req) {
         }
         // Use a fixed user identifier for now
         const userId = 'web-client';
+        console.log('[POST /chat] Upserting user:', userId);
         // Ensure user and conversation exist
         const user = await prisma.user.upsert({
             where: {
@@ -674,19 +677,25 @@ async function POST(req) {
                 phoneNumber: userId
             }
         });
+        console.log('[POST /chat] User upserted:', user.id);
         const conversation = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$conversation$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["getOrCreateConversationByUserId"])(user.id);
+        console.log('[POST /chat] Conversation:', conversation.id);
         // Store the incoming message
         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$message$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createMessage"])(conversation.id, message, 'INCOMING');
+        console.log('[POST /chat] Incoming message stored');
         // Generate AI response
         const aiResponse = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$openai$2f$generateResponse$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["generateResponse"])(message, {
             from: userId,
             conversationId: conversation.id
         });
+        console.log('[POST /chat] AI response generated:', aiResponse);
         // Store the AI response as a message
         await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$services$2f$message$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createMessage"])(conversation.id, aiResponse, 'OUTGOING');
+        console.log('[POST /chat] AI response stored');
         // Handle buffer/journal logic
         const { handleMessageBufferAndJournal } = await __turbopack_context__.r("[project]/src/services/journal.ts [app-route] (ecmascript, async loader)")(__turbopack_context__.i);
         await handleMessageBufferAndJournal(conversation.id);
+        console.log('[POST /chat] Journal logic handled');
         console.log('[POST /chat] Reply:', aiResponse);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             reply: aiResponse

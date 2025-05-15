@@ -5,6 +5,7 @@ import { AutoGrowingTextInput } from '@/src/components/AutoGrowingTextInput';
 import { Message } from '@/src/components/Message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import Constants from 'expo-constants';
 
 // Minimal local ChatMessage type
 type ChatMessage = {
@@ -13,6 +14,9 @@ type ChatMessage = {
   isUser: boolean;
   timestamp: number;
 };
+
+const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
+const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
 
 export const ChatScreen: React.FC = () => {
   const theme = useTheme();
@@ -95,10 +99,14 @@ export const ChatScreen: React.FC = () => {
     };
     setMessages(prev => [...prev, userMessage]);
     try {
-      const response = await axios.post('https://YOUR_SERVER_URL/chat', {
-        auth_token: 'YOUR_HARDCODED_TOKEN',
+      console.log('[ChatScreen] Sending message:', trimmedText);
+      console.log('[ChatScreen] Using server URL:', API_SERVER_URL);
+      console.log('[ChatScreen] Using auth token:', API_AUTH_TOKEN);
+      const response = await axios.post(`${API_SERVER_URL}/api/chat`, {
+        auth_token: API_AUTH_TOKEN,
         message: trimmedText,
       });
+      console.log('[ChatScreen] Server response:', response.data);
       const reply = (response.data as { reply?: string })?.reply || '';
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -108,6 +116,7 @@ export const ChatScreen: React.FC = () => {
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
+      console.error('[ChatScreen] Error sending message:', error);
       setMessages(prev => [...prev, {
         id: (Date.now() + 2).toString(),
         text: 'Error: Failed to get reply from server.',

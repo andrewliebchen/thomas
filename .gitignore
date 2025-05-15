@@ -57,6 +57,7 @@ prisma/.env
 
 # next.js
 /.next/
+server/.next/
 /out/
 
 # production

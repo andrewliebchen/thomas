@@ -30,6 +30,7 @@ This document outlines the engineering plan to refactor Dadbot into a true clien
   - Returns `{ reply }` in the response.
   - Implement a simple auth check for the hardcoded token.
   - Route all chat logic, memory, and personality through this endpoint.
+- **Status:** ✅ Complete. The `/chat` API endpoint has been implemented on the server, handling all chat logic, memory, and personality, with a hardcoded auth token check.
 
 ### 3. Refactor the Client (Expo App)
 - **UI:**
@@ -38,6 +39,7 @@ This document outlines the engineering plan to refactor Dadbot into a true clien
   - Send messages to the `/chat` endpoint, including the auth token.
   - Display the server's reply in the chat log.
 - **Remove any business logic** from the client.
+- **Status:** ✅ Complete. The Expo app is now a thin client that communicates with the server for all chat, memory, and thread operations. All business logic and persistence have been removed from the client.
 
 ### 4. Testing
 - **End-to-end testing:**

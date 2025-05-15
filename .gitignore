@@ -2,6 +2,13 @@
 
 # dependencies
 node_modules/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # Expo
 .expo/
@@ -32,10 +39,26 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
 *.tsbuildinfo
+next-env.d.ts
 
-# New additions
-.env
+# prisma
+prisma/.env
+
+# vercel
+.vercel
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+

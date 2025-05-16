@@ -50,29 +50,39 @@ export const JournalScreen: React.FC = () => {
       padding: theme.space[3],
     },
     entry: {
-      backgroundColor: '#FFF',
-      borderRadius: 10,
+      backgroundColor: theme.colors.card,
+      borderRadius: 16,
       padding: theme.space[3],
       marginBottom: theme.space[3],
       shadowColor: '#000',
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      shadowOffset: { width: 0, height: 2 },
-      elevation: 1,
+      shadowOpacity: 0.02,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 2,
+      marginHorizontal: theme.space[3],
     },
     entryContent: {
       fontSize: theme.fontSizes[2],
       color: theme.colors.text,
+      fontFamily: theme.fonts.body,
     },
     entryDate: {
       fontSize: theme.fontSizes[0],
-      color: theme.colors.muted,
-      marginTop: 6,
+      marginTop: theme.space[3],
     },
     error: {
-      color: 'red',
+      color: theme.colors.notification,
       textAlign: 'center',
-      marginTop: 20,
+      marginTop: theme.space[5],
+      fontFamily: theme.fonts.body,
+      fontSize: theme.fontSizes[2],
+    },
+    empty: {
+      textAlign: 'center',
+      color: theme.colors.muted,
+      fontFamily: theme.fonts.body,
+      fontSize: theme.fontSizes[2],
+      marginTop: theme.space[5],
     },
   });
 
@@ -94,7 +104,7 @@ export const JournalScreen: React.FC = () => {
           data={entries}
           renderItem={renderItem}
           keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={{ textAlign: 'center', color: theme.colors.muted }}>No journal entries found.</Text>}
+          ListEmptyComponent={<Text style={styles.empty}>No journal entries found.</Text>}
         />
       )}
     </SafeAreaView>

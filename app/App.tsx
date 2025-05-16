@@ -10,6 +10,7 @@ import { MenuProvider } from '@/src/context/MenuContext';
 import { MenuSheet } from '@/src/components/MenuSheet';
 import { useMenu } from '@/src/context/MenuContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
+import { theme } from '@/src/theme';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -26,17 +27,6 @@ function AppNavigator() {
   const { isVisible, options, hideMenu } = useMenu();
   const [activeTab, setActiveTab] = useState<'chat' | 'journal'>('chat');
 
-  const theme = {
-    colors: {
-      background: '#FFF9F2',
-      primary: '#FF8B7E',
-      text: '#222',
-      muted: '#888',
-    },
-    space: [0, 4, 8, 16, 24],
-    fontSizes: [12, 14, 16, 18],
-  };
-
   const styles = StyleSheet.create({
     tabBar: {
       flexDirection: 'row',
@@ -49,7 +39,7 @@ function AppNavigator() {
       paddingVertical: theme.space[1],
       paddingHorizontal: theme.space[4] || 24,
       borderRadius: 20,
-      backgroundColor: '#FFF',
+      backgroundColor: theme.colors.card,
       borderWidth: 1,
       borderColor: theme.colors.primary,
       marginHorizontal: theme.space[1],
@@ -103,7 +93,7 @@ function AppNavigator() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.background }}>
         <SafeAreaProvider>
           <ThemeProvider>
             <MenuProvider>

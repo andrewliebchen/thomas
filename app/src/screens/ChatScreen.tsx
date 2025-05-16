@@ -18,7 +18,11 @@ type ChatMessage = {
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
 
-export const ChatScreen: React.FC = () => {
+interface ChatScreenProps {
+  conversationId: string;
+}
+
+export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   const theme = useTheme();
   const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);

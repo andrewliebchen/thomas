@@ -20,20 +20,15 @@ export async function DELETE(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const conversationId = searchParams.get('conversationId');
-    if (!conversationId) {
-      return NextResponse.json({ error: 'Missing conversationId' }, { status: 400 });
-    }
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
     const [journalEntries, totalJournalEntries] = await Promise.all([
       prisma.journalEntry.findMany({
-        where: { conversationId },
         orderBy: { createdAt: 'desc' },
         skip: offset,
         take: limit,
       }),
-      prisma.journalEntry.count({ where: { conversationId } }),
+      prisma.journalEntry.count(),
     ]);
     return NextResponse.json({ journalEntries, totalJournalEntries });
   } catch (error) {

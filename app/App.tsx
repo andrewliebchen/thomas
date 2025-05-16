@@ -1,20 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { ThemeProvider } from '@/src/theme/ThemeProvider';
 import { ChatScreen } from '@/src/screens/ChatScreen';
-import { ListScreen } from '@/src/screens/ListScreen';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { TouchableOpacity, ActivityIndicator, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { JournalScreen } from '@/src/screens/JournalScreen';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LogBox } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
 import { MenuProvider } from '@/src/context/MenuContext';
 import { MenuSheet } from '@/src/components/MenuSheet';
 import { useMenu } from '@/src/context/MenuContext';
@@ -26,77 +17,86 @@ LogBox.ignoreLogs([
   'ColorPropType will be removed',
 ]);
 
-type RootStackParamList = {
-  Chat: { threadId: string };
-  List: undefined;
-};
-
-type AppNavigationProp = NativeStackNavigationProp<RootStackParamList, 'List'>;
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const TABS = [
+  { key: 'chat', label: 'Chat' },
+  { key: 'journal', label: 'Journal' },
+];
 
 function AppNavigator() {
-  const navigation = useNavigation<AppNavigationProp>();
-  const { isVisible, options, hideMenu, showMenu } = useMenu();
+  const { isVisible, options, hideMenu } = useMenu();
+  const [activeTab, setActiveTab] = useState<'chat' | 'journal'>('chat');
 
-  const handleNewThread = async () => {
-    try {
-      const threadId = uuidv4();
-      const now = Date.now();
-      
-      // Navigate to the new chat
-      navigation.navigate('Chat', { threadId });
-    } catch (error) {
-      console.error('Error creating new thread:', error);
-    }
+  const theme = {
+    colors: {
+      background: '#FFF9F2',
+      primary: '#FF8B7E',
+      text: '#222',
+      muted: '#888',
+    },
+    space: [0, 4, 8, 16, 24],
+    fontSizes: [12, 14, 16, 18],
   };
 
+  const styles = StyleSheet.create({
+    tabBar: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.background,
+      padding: theme.space[3],
+      justifyContent: 'center',
+      gap: theme.space[3],
+    },
+    tab: {
+      paddingVertical: theme.space[1],
+      paddingHorizontal: theme.space[4] || 24,
+      borderRadius: 20,
+      backgroundColor: '#FFF',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      marginHorizontal: theme.space[1],
+    },
+    tabActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    tabText: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+      fontSize: theme.fontSizes[2],
+    },
+    tabTextActive: {
+      color: '#FFF',
+    },
+    content: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+  });
+
   return (
-    <>
-      <Stack.Navigator
-        initialRouteName="Chat"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#FF8B7E',
-          },
-          headerTintColor: '#FFF9F2',
-          headerTitleStyle: {
-            fontWeight: '600',
-            fontSize: 18,
-          },
-          contentStyle: {
-            backgroundColor: '#FFF9F2',
-          },
-          headerBackTitleStyle: {
-            fontSize: 16,
-          },
-          headerTitleAlign: 'center',
-          headerShadowVisible: true,
-          animation: 'default',
-        }}
-      >
-        <Stack.Screen 
-          name="Chat" 
-          component={ChatScreen}
-          options={{
-            title: 'Dad',
-            headerLeft: () => null,
-          }}
-        />
-        <Stack.Screen 
-          name="List" 
-          component={ListScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <View style={styles.tabBar}>
+        {TABS.map(tab => (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tab, activeTab === tab.key && styles.tabActive]}
+            onPress={() => setActiveTab(tab.key as 'chat' | 'journal')}
+          >
+            <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>{tab.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.content}>
+        {activeTab === 'chat' ? (
+          <ChatScreen conversationId={'cmahgtzud00pqu0fpxx2erl1a'} />
+        ) : (
+          <JournalScreen />
+        )}
+      </View>
       <MenuSheet 
         visible={isVisible}
         onClose={hideMenu}
         options={options}
       />
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -106,11 +106,9 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <ThemeProvider>
-            <NavigationContainer>
-              <MenuProvider>
-                <AppNavigator />
-              </MenuProvider>
-            </NavigationContainer>
+            <MenuProvider>
+              <AppNavigator />
+            </MenuProvider>
           </ThemeProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

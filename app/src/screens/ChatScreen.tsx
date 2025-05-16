@@ -168,6 +168,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
             automaticallyAdjustKeyboardInsets={true}
             keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"
+            contentInset={{ top: 60, bottom: 0, left: 0, right: 0 }}
           />
           <View style={styles.inputContainer}>
             <AutoGrowingTextInput

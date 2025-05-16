@@ -105,6 +105,7 @@ export const JournalScreen: React.FC = () => {
           renderItem={renderItem}
           keyExtractor={item => item.id}
           ListEmptyComponent={<Text style={styles.empty}>No journal entries found.</Text>}
+          contentInset={{ top: 60, bottom: 0, left: 0, right: 0 }}
         />
       )}
     </SafeAreaView>

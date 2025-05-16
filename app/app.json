@@ -16,14 +16,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourdomain.dadapp",
-      "buildNumber": "20",
+      "buildNumber": "100",
       "jsEngine": "hermes",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": [
-          "remote-notification",
-          "audio"
-        ],
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },

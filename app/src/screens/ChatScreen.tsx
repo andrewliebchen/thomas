@@ -4,8 +4,6 @@ import { useTheme } from '@/src/theme/ThemeProvider';
 import { Message } from '@/src/components/Message';
 import axios from 'axios';
 import Constants from 'expo-constants';
-import { JournalScreen } from './JournalScreen';
-import { primativeColors } from '@/src/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChatMessage } from '@/src/types';
 import { useNavigation } from '@react-navigation/native';

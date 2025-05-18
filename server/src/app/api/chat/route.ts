@@ -3,6 +3,8 @@ import { generateResponse } from '@/services/openai/generateResponse';
 import { getOrCreateConversationByUserId } from '@/services/conversation';
 import { createMessage } from '@/services/message';
 import { PrismaClient } from '@prisma/client';
+import { startOfDay, endOfDay } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 
 // Replace hardcoded token with environment variable
 const HARDCODED_TOKEN = process.env.CHAT_API_AUTH_TOKEN;
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
       where: { phoneNumber: userId },
       update: {},
       create: { phoneNumber: userId },
+      select: { id: true, timezone: true },
     });
     console.log('[POST /chat] User upserted:', user.id);
     const conversation = await getOrCreateConversationByUserId(user.id);
@@ -65,21 +68,31 @@ export async function GET() {
       where: { phoneNumber: userId },
       update: {},
       create: { phoneNumber: userId },
+      select: { id: true, timezone: true },
     });
     const conversation = await getOrCreateConversationByUserId(user.id);
+    const timezone = user.timezone || 'America/Los_Angeles';
 
-    // Get start and end of today in UTC
+    // Get start and end of today in user's timezone, then convert to UTC
     const now = new Date();
-    const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
-    const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+    const startLocal = startOfDay(now);
+    const endLocal = endOfDay(now);
+    const start = fromZonedTime(startLocal, timezone);
+    const end = fromZonedTime(endLocal, timezone);
 
-    // Fetch all messages for today
+    // Minimal log for debugging
+    // console.log('[GET /chat] timezone:', timezone);
+    // console.log('[GET /chat] startOfDay (user tz -> UTC):', start.toISOString());
+    // console.log('[GET /chat] endOfDay (user tz -> UTC):', end.toISOString());
+    // console.log('[GET /chat] conversationId:', conversation.id);
+
+    // Fetch all messages for today in user's timezone
     const messages = await prisma.message.findMany({
       where: {
         conversationId: conversation.id,
         createdAt: {
-          gte: startOfDay,
-          lte: endOfDay,
+          gte: start,
+          lte: end,
         },
       },
       orderBy: { createdAt: 'asc' },
@@ -90,6 +103,10 @@ export async function GET() {
         createdAt: true,
       },
     });
+    // console.log(`[GET /chat] messages returned: ${messages.length}`);
+    // if (messages.length > 0) {
+    //   console.log('[GET /chat] message timestamps:', messages.map(m => m.createdAt).join(', '));
+    // }
     return NextResponse.json({ messages });
   } catch (error) {
     console.error('[GET /chat] Error:', error);

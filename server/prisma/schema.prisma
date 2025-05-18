@@ -18,6 +18,7 @@ model User {
   smsOptInAt    DateTime?
   smsOptOutAt   DateTime?
   smsOptInMethod String?
+  timezone      String? // IANA timezone, e.g., 'America/Los_Angeles'
 }
 
 model Conversation {

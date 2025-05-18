@@ -1,5 +1,5 @@
 import 'openai/shims/node';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 const prisma = new PrismaClient();
 import OpenAI from 'openai';
 import { getSystemPrompt } from './openai/dad';
@@ -34,13 +34,11 @@ export async function createJournalEntry(conversationId: string, content: string
 
 // Get recent journal entries for a conversation
 export async function getRecentJournalEntries(conversationId: string, limit?: number): Promise<JournalEntry[]> {
-  const query: any = {
+  const query: Prisma.JournalEntryFindManyArgs = {
     where: { conversationId },
     orderBy: { createdAt: 'desc' },
+    ...(typeof limit === 'number' && limit > 0 ? { take: limit } : {}),
   };
-  if (typeof limit === 'number' && limit > 0) {
-    query.take = limit;
-  }
   return prisma.journalEntry.findMany(query);
 }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteJournalEntry } from '@/services/journal';
+import { deleteJournalEntry, setJournalEntryFavorited } from '@/services/journal';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -33,5 +33,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ journalEntries, totalJournalEntries });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message || 'Failed to fetch journal entries' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const { id, favorited } = await req.json();
+    if (!id || typeof id !== 'string' || typeof favorited !== 'boolean') {
+      return NextResponse.json({ error: 'Missing or invalid journal entry ID or favorited status' }, { status: 400 });
+    }
+    const updated = await setJournalEntryFavorited(id, favorited);
+    return NextResponse.json({ success: true, journalEntry: updated });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message || 'Failed to update journal entry' }, { status: 500 });
   }
 } 

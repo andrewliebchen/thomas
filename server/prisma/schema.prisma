@@ -49,6 +49,7 @@ model JournalEntry {
   conversation   Conversation  @relation(fields: [conversationId], references: [id])
   content        String
   createdAt      DateTime      @default(now())
+  favorited      Boolean       @default(false)
 }
 
 enum Direction {

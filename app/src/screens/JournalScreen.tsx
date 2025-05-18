@@ -18,6 +18,7 @@ export interface JournalEntry {
   conversationId: string;
   content: string;
   createdAt: string;
+  favorited?: boolean;
 }
 
 export const JournalScreen: React.FC = () => {
@@ -26,6 +27,7 @@ export const JournalScreen: React.FC = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -107,13 +109,42 @@ export const JournalScreen: React.FC = () => {
     },
   });
 
+  // Toggle favorited status for the current entry
+  const toggleFavorite = async () => {
+    const entry = entries[currentPage];
+    if (!entry) return;
+    try {
+      const response = await axios.patch(
+        `${API_SERVER_URL}/api/journal`,
+        { id: entry.id, favorited: !entry.favorited },
+        { headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` } }
+      );
+      const updated = (response.data as any).journalEntry;
+      setEntries((prev) =>
+        prev.map((e, idx) =>
+          idx === currentPage ? { ...e, favorited: updated.favorited } : e
+        )
+      );
+    } catch (err) {
+      // Optionally show error
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <HeaderBar
         left={
-          <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-            <MaterialCommunityIcons name="star-outline" size={28} color={theme.colors.text} />
-          </TouchableOpacity>
+          entries.length > 0 ? (
+            <TouchableOpacity style={styles.iconButton} onPress={toggleFavorite}>
+              <MaterialCommunityIcons
+                name={entries[currentPage]?.favorited ? 'heart' : 'heart-outline'}
+                size={28}
+                color={theme.colors.text}
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.iconButton} />
+          )
         }
         center={
           <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
@@ -136,7 +167,11 @@ export const JournalScreen: React.FC = () => {
       ) : entries.length === 0 ? (
         <Text style={styles.empty}>No journal entries found.</Text>
       ) : (
-        <PagerView style={styles.pager} initialPage={0}>
+        <PagerView
+          style={styles.pager}
+          initialPage={0}
+          onPageSelected={e => setCurrentPage(e.nativeEvent.position)}
+        >
           {entries.map((item, idx) => (
             <View style={styles.entry} key={item.id}>
               <Text style={styles.entryDate}>{

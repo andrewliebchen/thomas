@@ -91,4 +91,12 @@ export async function deleteJournalEntry(journalEntryId: string) {
   return prisma.journalEntry.delete({
     where: { id: journalEntryId },
   });
+}
+
+// Update the favorited status of a journal entry by ID
+export async function setJournalEntryFavorited(journalEntryId: string, favorited: boolean) {
+  return prisma.journalEntry.update({
+    where: { id: journalEntryId },
+    data: { favorited },
+  });
 } 

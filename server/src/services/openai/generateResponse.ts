@@ -10,6 +10,7 @@ type JournalEntry = {
   conversationId: string;
   content: string;
   createdAt: Date;
+  favorited?: boolean;
 };
 
 export async function generateResponse(message: string, context?: { from?: string; conversationId?: string }): Promise<string> {
@@ -30,9 +31,9 @@ export async function generateResponse(message: string, context?: { from?: strin
       if (journalEntries.length > 0) {
         messages.push({
           role: 'system',
-          content: `--- Dad's Journal Entries (Memory) ---\nThese are Dad's private reflections and memories about his relationship with his son. Use them to inform Dad's responses, personality, and emotional continuity.\n\n${(journalEntries as JournalEntry[])
+          content: `--- Dad's Journal Entries (Memory) ---\nThese are Dad's private reflections and memories about his relationship with his son. Use them to inform Dad's responses, personality, and emotional continuity.\n\nFavorited entries (marked with a heart \u2665) are ones the user found especially good, meaningful, or helpful.\n\n${(journalEntries as JournalEntry[])
             .reverse()
-            .map((entry: JournalEntry, i: number) => `Entry ${i + 1}: ${entry.content}`)
+            .map((entry: JournalEntry, i: number) => `Entry ${i + 1}${entry.favorited ? ' \u2665' : ''}: ${entry.content}`)
             .join('\n\n')}`,
         } as OpenAI.ChatCompletionMessageParam);
       }

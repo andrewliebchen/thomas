@@ -54,4 +54,45 @@ export async function POST(req: NextRequest) {
     console.error('[POST /chat] Error:', error);
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    // Use a fixed user identifier for now
+    const userId = 'web-client';
+    // Ensure user and conversation exist
+    const user = await prisma.user.upsert({
+      where: { phoneNumber: userId },
+      update: {},
+      create: { phoneNumber: userId },
+    });
+    const conversation = await getOrCreateConversationByUserId(user.id);
+
+    // Get start and end of today in UTC
+    const now = new Date();
+    const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+
+    // Fetch all messages for today
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId: conversation.id,
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        content: true,
+        direction: true,
+        createdAt: true,
+      },
+    });
+    return NextResponse.json({ messages });
+  } catch (error) {
+    console.error('[GET /chat] Error:', error);
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
 } 

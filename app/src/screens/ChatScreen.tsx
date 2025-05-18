@@ -57,23 +57,20 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       flex: 1,
     },
     messagesList: {
-      flex: 1,
       padding: theme.space[3],
       gap: theme.space[3],
+      flexGrow: 1,
     },
     inputRow: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       backgroundColor: theme.colors.card,
-      borderTopLeftRadius: 30,
-      borderTopRightRadius: 30,
-      borderWidth: 1,
-      borderBottomWidth: 0,
-      borderColor: theme.colors.border,
       padding: theme.space[3],
       paddingBottom: theme.space[1],
       gap: theme.space[2],
       position: 'relative',
+      // borderTopWidth: 1,
+      // borderColor: theme.colors.border,
     },
     input: {
       flex: 1,
@@ -138,6 +135,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
         threadId: conversationId,
       };
       setMessages(prev => [...prev, assistantMessage]);
+      scrollToBottom();
     } catch (error) {
       console.error('[ChatScreen] Error sending message:', error);
       setMessages(prev => [...prev, {
@@ -184,6 +182,37 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   };
 
   const canSendMessage = inputText.trim().length > 0;
+
+  useEffect(() => {
+    const fetchTodaysMessages = async () => {
+      try {
+        const response = await axios.get(`${API_SERVER_URL}/api/chat`, {
+          headers: {
+            'Authorization': `Bearer ${API_AUTH_TOKEN}`,
+          },
+        });
+        const data = response.data as { messages: any[] };
+        const apiMessages = data.messages || [];
+        // Map API messages to ChatMessage type
+        const mapped = apiMessages.map((msg: any) => ({
+          id: msg.id,
+          text: msg.content,
+          isUser: msg.direction === 'INCOMING' ? true : false,
+          timestamp: new Date(msg.createdAt).getTime(),
+          threadId: conversationId,
+        }));
+        setMessages(mapped);
+        scrollToBottom();
+      } catch (error) {
+        console.error('[ChatScreen] Error fetching today\'s messages:', error);
+      }
+    };
+    fetchTodaysMessages();
+  }, [conversationId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length]);
 
   return (
     <SafeAreaView style={styles.container}>

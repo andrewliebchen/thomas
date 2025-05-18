@@ -43,6 +43,7 @@ const base =  {
 export const primativeColors = {
   "100": `hsl(${base.hue}, ${base.saturation}%, 100%)`, // Pure white
   "98": `hsl(${base.hue}, ${base.saturation}%, 98%)`,  // Very light background
+  "92": `hsl(${base.hue}, ${base.saturation}%, 92%)`,  
   "95": `hsl(${base.hue}, ${base.saturation}%, 95%)`,  // Muted background
   "90": `hsl(${base.hue}, ${base.saturation}%, 90%)`,  // Card background
   "85": `hsl(${base.hue}, ${base.saturation}%, 85%)`,  
@@ -55,6 +56,7 @@ export const primativeColors = {
   "20": `hsl(${base.hue}, ${base.saturation}%, 20%)`, // Text color
   "15": `hsl(${base.hue}, ${base.saturation}%, 15%)`,
   "10": `hsl(${base.hue}, ${base.saturation}%, 10%)`,
+  "08": `hsl(${base.hue}, ${base.saturation}%, 8%)`,
   "05": `hsl(${base.hue}, ${base.saturation}%, 5%)`,
   "02": `hsl(${base.hue}, ${base.saturation}%, 2%)`,
   "00": `hsl(${base.hue}, ${base.saturation}%, 0%)`,
@@ -69,10 +71,10 @@ export const theme: DadTheme = {
     background: primativeColors["98"], // Very light background
     primary: primativeColors["80"], // Soft pink accent
     muted: primativeColors["95"], // Light pink for muted areas
-    card: primativeColors["100"], // White for cards/bubbles
-    border: primativeColors["90"], // Light brown for borders
-    userBubbleBg: primativeColors['90'], // User message bubble background
-    userBubbleText: primativeColors['30'], // User message bubble text
+    card: primativeColors["90"], // White for cards/bubbles
+    border: primativeColors["85"], // Light brown for borders
+    userBubbleBg: primativeColors["92"], // User message bubble background
+    userBubbleText: primativeColors['40'], // User message bubble text
   },
   fonts: {
     body: 'System',
@@ -102,9 +104,9 @@ export const darkTheme: DadTheme = {
     primary: primativeColors["20"], // Accent
     muted: primativeColors["05"], // Muted dark
     card: primativeColors["10"], // Card background
-    border: primativeColors["10"], // Border
-    userBubbleBg: primativeColors['10'], // User message bubble background
-    userBubbleText: primativeColors['70'], // User message bubble text
+    border: primativeColors["20"], // Border
+    userBubbleBg: primativeColors['08'], // User message bubble background
+    userBubbleText: primativeColors['60'], // User message bubble text
   },
   fonts: {
     body: 'System',
@@ -124,4 +126,3 @@ export const darkTheme: DadTheme = {
   space: [0, 4, 8, 16, 24, 32, 48, 64],
   breakpoints: ['0px', '40em', '52em', '64em'],
 };
-console.log('darkTheme.colors.background', darkTheme.colors.background); 

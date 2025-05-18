@@ -17,8 +17,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ left, center, right, style
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: theme.space[4],
-      paddingVertical: theme.space[2],
-      backgroundColor: 'transparent',
+      paddingTop: theme.space[1],
+      paddingBottom: theme.space[2],
+      backgroundColor: theme.colors.card,
       ...style,
     },
     center: {

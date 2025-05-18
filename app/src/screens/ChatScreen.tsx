@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, FlatList, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import { View, FlatList, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, TouchableOpacity, Text, Image, TextInput, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeProvider';
-import { AutoGrowingTextInput } from '@/src/components/AutoGrowingTextInput';
 import { Message } from '@/src/components/Message';
 import axios from 'axios';
 import Constants from 'expo-constants';
@@ -12,6 +11,7 @@ import { ChatMessage } from '@/src/types';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { HeaderBar } from '@/src/components/HeaderBar';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
@@ -36,14 +36,16 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(0);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const PROFILE_IMAGE_SIZE = 72;
+  const INPUT_LINE_HEIGHT = 24;
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
-      gap: theme.space[2],
+      backgroundColor: theme.colors.card,
+      
     },
     profileContainer: {
       alignItems: 'center',
@@ -55,6 +57,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     },
     chatScreenContent: {
       flex: 1,
+      backgroundColor: theme.colors.background,
     },
     messagesList: {
       padding: theme.space[3],
@@ -70,14 +73,59 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       gap: theme.space[2],
       position: 'relative',
       // borderTopWidth: 1,
-      // borderColor: theme.colors.border,
+      // borderColor: 'red',
     },
     input: {
       flex: 1,
       backgroundColor: 'transparent',
       fontSize: theme.fontSizes[2],
-      maxHeight: 120,
-      minHeight: 40,
+      minHeight: INPUT_LINE_HEIGHT * 3,
+      lineHeight: INPUT_LINE_HEIGHT,
+      // borderWidth: 1,
+      // borderColor: 'red',
+    },
+    inputActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      // borderWidth: 1,
+      // borderColor: 'red',
+      backgroundColor: theme.colors.card,
+      paddingBottom: theme.space[3],
+      paddingHorizontal: theme.space[3],
+    },
+    iconButtonContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      gap: theme.space[2],
+      opacity: 0.5,
+      // borderWidth: 1,
+      // borderColor: 'red',
+    },
+    iconButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'transparent',
+    },
+    sendButton: {
+      backgroundColor: theme.colors.text,
+      paddingVertical: theme.space[2],
+      paddingHorizontal: theme.space[3],
+      borderRadius: 24,
+      alignSelf: 'flex-end',
+    },
+    sendButtonDisabled: {
+      opacity: 0.5,
+    },
+    sendButtonText: {
+      color: theme.colors.card,
+      fontSize: theme.fontSizes[2],
+      fontFamily: theme.fonts.body,
+      fontWeight: '600', // semibold
     },
     bottomBarMask: {
       position: 'absolute',
@@ -165,9 +213,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     }
   }, [handleSendMessage]);
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => (
-    <Message message={item as any} />
-  );
+  const renderMessage = ({ item, index }: { item: ChatMessage, index: number }) => {
+    const isLast = index === messages.length - 1;
+    return (
+      <View style={isLast ? { marginBottom: 16 } : undefined}>
+        <Message message={item as any} />
+      </View>
+    );
+  };
 
   // Add a simple thinking indicator
   const renderFooter = () => {
@@ -201,18 +254,16 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
           timestamp: new Date(msg.createdAt).getTime(),
           threadId: conversationId,
         }));
+        console.log('[ChatScreen] Fetched messages:', mapped);
         setMessages(mapped);
-        scrollToBottom();
+        setInitialLoadDone(true);
+        console.log('[ChatScreen] initialLoadDone set to true');
       } catch (error) {
         console.error('[ChatScreen] Error fetching today\'s messages:', error);
       }
     };
     fetchTodaysMessages();
   }, [conversationId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages.length]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -232,38 +283,81 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
         style={styles.container}
       >
         <View style={styles.chatScreenContent}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.messagesList}
-            onContentSizeChange={handleContentSizeChange}
-            onLayout={handleLayout}
-            showsVerticalScrollIndicator={false}
-            automaticallyAdjustKeyboardInsets={true}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
-            ListFooterComponent={renderFooter}
-          />
-          <View style={styles.inputRow}>
-            <View style={styles.bottomBarMask}/>
-            <AutoGrowingTextInput
-              style={styles.input}
-              value={inputText}
-              onChangeText={handleTextChange}
-              placeholder="Type a message..."
-              placeholderTextColor={primativeColors['70']}
-              multiline
-              onSubmitEditing={() => {
-                if (canSendMessage) {
-                  handleSendMessage();
-                }
-              }}
-              editable={!isLoading}
-              textColor={theme.colors.text}
-            />
-          </View>
+          {!initialLoadDone ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+          ) : (
+            <>
+              <FlatList
+                ref={flatListRef}
+                data={messages}
+                renderItem={renderMessage}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.messagesList}
+                onContentSizeChange={() => {
+                  if (initialLoadDone) {
+                    setTimeout(() => {
+                      scrollToBottom();
+                    }, 50);
+                  }
+                }}
+                onLayout={handleLayout}
+                showsVerticalScrollIndicator={false}
+                automaticallyAdjustKeyboardInsets={true}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="handled"
+                ListFooterComponent={renderFooter}
+              />
+              <View style={styles.inputRow}>
+                <View style={styles.bottomBarMask}/>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      height: 60, // 3 lines * 20px
+                      fontSize: theme.fontSizes[2],
+                      color: theme.colors.text,
+                      backgroundColor: 'transparent',
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                      textAlignVertical: 'top',
+                    },
+                  ]}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder="Type a message..."
+                  placeholderTextColor={primativeColors['60']}
+                  multiline={true}
+                  numberOfLines={3}
+                  blurOnSubmit={true}
+                  editable={!isLoading}
+                />
+              </View>
+              <View style={styles.inputActions}>
+              <View style={styles.iconButtonContainer}>
+                <TouchableOpacity style={styles.iconButton} disabled={true} onPress={() => { /* TODO: Camera functionality */ }}>
+                  <MaterialCommunityIcons name="camera-outline" size={24} color={theme.colors.text} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.iconButton} disabled={true} onPress={() => { /* TODO: Microphone functionality */ }}>
+                  <MaterialCommunityIcons name="microphone-outline" size={24} color={theme.colors.text} />
+                </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.sendButton,
+                    (!canSendMessage || isLoading) && styles.sendButtonDisabled,
+                  ]}
+                  onPress={handleSendMessage}
+                  disabled={!canSendMessage || isLoading}
+                >
+                  <Text style={styles.sendButtonText}>
+                    Send
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

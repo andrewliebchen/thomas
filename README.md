@@ -17,25 +17,39 @@ Dadbot is designed as a modern, maintainable, and scalable chatbot system. All b
 ```
 .
 ├── app/         # Expo React Native client app
-│   └── docs/    # Client-side documentation and plans
+│   ├── assets/  # Static assets (images, icons, etc.)
+│   └── src/     # Client source code (components, screens, utils, etc.)
 ├── server/      # Next.js server with all business logic and integrations
-│   └── prisma/  # Database schema and migrations
+│   ├── prisma/  # Database schema, migrations, and tests
+│   └── scripts/ # Utility scripts for development and testing
 ├── brief.md     # High-level architecture brief
 └── README.md    # (This file)
 ```
 
 ### Key Directories
 - `app/`: The Expo app client. Handles UI and API communication only.
+- `app/assets/`: Static assets for the client app.
+- `app/src/`: Source code for the client app (components, screens, etc.).
 - `server/`: The Next.js server. Handles all business logic, memory, and integrations.
+- `server/prisma/`: Database schema, migrations, and related tests.
+- `server/scripts/`: Utility scripts for development and testing.
 - `brief.md`: Architecture brief and goals.
-- `app/docs/`: Engineering plans and technical documentation for the client.
 
 ---
 
 ## How It Works
-- The client app sends user messages to the server via a `/chat` API endpoint, including an authentication token.
-- The server processes the message, manages memory and personality, and returns a reply.
-- The client displays the reply in the chat UI.
+
+- **Chat Flow:**  
+  The client app provides a chat interface where users can send messages to the server via the `/chat` API endpoint, including an authentication token for security. The server processes each message, manages conversation memory and personality, and returns a reply, which the client displays in the chat UI.
+
+- **Automated Journaling:**  
+  In addition to chat, the system features an automated journaling capability. After a set number of exchanged messages (e.g., 3 from each participant), the server generates a private journal entry reflecting on the recent conversation. This entry is created using AI (OpenAI) and is stored in the database, capturing the "Dad" persona's thoughts, observations, and plans about the relationship. The journal is not visible to the other chat participant.
+
+- **Journal Access:**  
+  Users can view these journal entries in a dedicated Journal screen within the client app. The app fetches recent journal entries from the `/api/journal` endpoint and displays them in a paged, card-like interface. Each entry provides a timestamp and a concise summary of the AI's reflections, offering insight into the ongoing relationship and conversation themes.
+
+- **Entry Management:**  
+  Journal entries are created automatically and can be deleted via the API. The client app provides UI controls for browsing and managing these entries.
 
 ---
 

@@ -87,7 +87,7 @@ export const theme: DadTheme = {
     bold: '700',
   },
   lineHeights: {
-    body: 1.5,
+    body: 1.4,
     heading: 1.25,
   },
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],

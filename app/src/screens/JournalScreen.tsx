@@ -50,8 +50,7 @@ export const JournalScreen: React.FC = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
-      paddingTop: theme.space[3],
+      backgroundColor: theme.colors.card,
     },
     iconButton: {
       width: 40,
@@ -74,12 +73,10 @@ export const JournalScreen: React.FC = () => {
     },
     entry: {
       flex: 1,
-      backgroundColor: theme.colors.card,
+      backgroundColor: theme.colors.background,
       borderRadius: 24,
       padding: theme.space[4],
       margin: theme.space[3],
-      borderWidth: 1,
-      borderColor: theme.colors.border,
     },
     entryContent: {
       fontSize: theme.fontSizes[3],
@@ -131,7 +128,9 @@ export const JournalScreen: React.FC = () => {
       />
       {/* Carousel */}
       {loading ? (
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : entries.length === 0 ? (

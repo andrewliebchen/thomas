@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import { DadTheme, theme } from '@/src/theme';
+import { DadTheme, theme, darkTheme } from '@/src/theme';
+import { useColorScheme } from 'react-native';
 
 const ThemeContext = createContext<DadTheme>(theme);
 
@@ -16,8 +17,12 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const colorScheme = useColorScheme();
+  console.log('colorScheme', colorScheme);
+  console.log('darkTheme', darkTheme);
+  const currentTheme = colorScheme === 'dark' ? darkTheme : theme;
   return (
-    <ThemeContext.Provider value={theme}>
+    <ThemeContext.Provider value={currentTheme}>
       {children}
     </ThemeContext.Provider>
   );

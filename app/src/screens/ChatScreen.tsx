@@ -201,7 +201,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View style={styles.chatScreenContent}>
           <FlatList

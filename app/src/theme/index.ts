@@ -45,6 +45,7 @@ export const primativeColors = {
   "98": `hsl(${base.hue}, ${base.saturation}%, 98%)`,  // Very light background
   "95": `hsl(${base.hue}, ${base.saturation}%, 95%)`,  // Muted background
   "90": `hsl(${base.hue}, ${base.saturation}%, 90%)`,  // Card background
+  "85": `hsl(${base.hue}, ${base.saturation}%, 85%)`,  
   "80": `hsl(${base.hue}, ${base.saturation}%, 80%)`,  // Primary accent
   "70": `hsl(${base.hue}, ${base.saturation}%, 70%)`,
   "60": `hsl(${base.hue}, ${base.saturation}%, 60%)`,
@@ -67,12 +68,9 @@ export const theme: DadTheme = {
     textSecondary: primativeColors["40"], // Dark brown for text
     background: primativeColors["98"], // Very light background
     primary: primativeColors["80"], // Soft pink accent
-    secondary: '#7FBEEB', // (Keep as is or update if needed)
-    accent: '#98D7C2', // (Keep as is or update if needed)
     muted: primativeColors["95"], // Light pink for muted areas
     card: primativeColors["100"], // White for cards/bubbles
     border: primativeColors["90"], // Light brown for borders
-    notification: '#FF9B7E', // (Keep as is or update if needed)
     userBubbleBg: primativeColors['90'], // User message bubble background
     userBubbleText: primativeColors['30'], // User message bubble text
   },
@@ -93,4 +91,37 @@ export const theme: DadTheme = {
   fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
   space: [0, 4, 8, 16, 24, 32, 48, 64],
   breakpoints: ['0px', '40em', '52em', '64em'],
-}; 
+};
+
+export const darkTheme: DadTheme = {
+  dark: true,
+  colors: {
+    text: primativeColors["80"], // Light text
+    textSecondary: primativeColors["60"],
+    background: primativeColors["02"], // Very dark background
+    primary: primativeColors["20"], // Accent
+    muted: primativeColors["05"], // Muted dark
+    card: primativeColors["05"], // Card background
+    border: primativeColors["10"], // Border
+    userBubbleBg: primativeColors['10'], // User message bubble background
+    userBubbleText: primativeColors['70'], // User message bubble text
+  },
+  fonts: {
+    body: 'System',
+    heading: 'System',
+    monospace: 'Menlo',
+  },
+  fontWeights: {
+    body: '400',
+    heading: '700',
+    bold: '700',
+  },
+  lineHeights: {
+    body: 1.5,
+    heading: 1.25,
+  },
+  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
+  space: [0, 4, 8, 16, 24, 32, 48, 64],
+  breakpoints: ['0px', '40em', '52em', '64em'],
+};
+console.log('darkTheme.colors.background', darkTheme.colors.background); 

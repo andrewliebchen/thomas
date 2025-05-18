@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     console.log('[POST /chat] Request received');
     const body = await req.json();
-    const { auth_token, message } = body;
+    const { auth_token, message, image } = body;
     console.log('[POST /chat] Incoming body:', body);
 
     if (auth_token !== HARDCODED_TOKEN) {
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     await createMessage(conversation.id, message, 'INCOMING');
     console.log('[POST /chat] Incoming message stored');
     // Generate AI response
-    const aiResponse = await generateResponse(message, { from: userId, conversationId: conversation.id });
+    const aiResponse = await generateResponse(message, { from: userId, conversationId: conversation.id }, image);
     console.log('[POST /chat] AI response generated:', aiResponse);
     // Store the AI response as a message
     await createMessage(conversation.id, aiResponse, 'OUTGOING');

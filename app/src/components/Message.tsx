@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { StyledText } from '@/src/theme/components';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { ChatMessage } from '@/src/types';
@@ -31,6 +31,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       color: isUser ? theme.colors.userBubbleText : theme.colors.text,
       fontFamily: theme.fonts.body,
     },
+    image: {
+      width: 200,
+      height: 200,
+      borderRadius: 20,
+      marginBottom: -theme.space[3],
+      alignSelf: 'flex-end',
+    },
   });
 
   // Skip rendering memory context messages
@@ -39,10 +46,19 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   }
 
   return (
-    <View style={styles.messageContainer}>
-      <StyledText style={styles.messageText}>
-        {message.text}
-      </StyledText>
+    <View style={{gap: theme.space[2]}}>
+      {message.imageUri && (
+        <Image
+          source={{ uri: message.imageUri }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
+      <View style={[styles.messageContainer, {marginRight: message.imageUri && theme.space[3], marginTop: message.imageUri && -theme.space[4]}]}>
+        <StyledText style={styles.messageText}>
+          {message.text}
+        </StyledText>
+      </View>
     </View>
   );
 }; 

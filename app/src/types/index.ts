@@ -5,6 +5,10 @@ export interface ChatMessage {
   timestamp: number;
   threadId: string;
   isMemoryContext?: boolean;
+  imageUri?: string; // local or remote URI for display
+  imageBase64?: string; // base64 for sending to server/OpenAI
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 export interface Thread {

@@ -14,7 +14,7 @@ type JournalEntry = {
   messageIds: string[];
 };
 
-export async function generateResponse(message: string, context?: { from?: string; conversationId?: string }): Promise<string> {
+export async function generateResponse(message: string, context?: { from?: string; conversationId?: string }, image?: { base64: string; width?: number; height?: number; uri?: string }): Promise<string> {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     dangerouslyAllowBrowser: process.env.NODE_ENV === 'test',
@@ -50,7 +50,25 @@ export async function generateResponse(message: string, context?: { from?: strin
           }) as OpenAI.ChatCompletionMessageParam)
       );
     }
-    messages.push({ role: 'user', content: message } as OpenAI.ChatCompletionMessageParam);
+    // Compose user message
+    let userMessage: OpenAI.ChatCompletionMessageParam;
+    if (image && image.base64) {
+      userMessage = {
+        role: 'user',
+        content: [
+          { type: 'text', text: message || 'Here is an image.' },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:image/jpeg;base64,${image.base64}`,
+            },
+          },
+        ],
+      };
+    } else {
+      userMessage = { role: 'user', content: message };
+    }
+    messages.push(userMessage);
     console.log('OpenAI prompt messages:', JSON.stringify(messages, null, 2));
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-2024-08-06',

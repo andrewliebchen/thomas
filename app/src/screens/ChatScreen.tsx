@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { HeaderBar } from '@/src/components/HeaderBar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
@@ -35,9 +36,16 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(0);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [pickedImage, setPickedImage] = useState<{
+    uri: string;
+    base64: string;
+    width: number;
+    height: number;
+  } | null>(null);
 
   const PROFILE_IMAGE_SIZE = 72;
   const INPUT_LINE_HEIGHT = 24;
+  const SEND_BUTTON_HEIGHT = 40;
 
   const styles = StyleSheet.create({
     container: {
@@ -95,15 +103,13 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.colors.card,
-      gap: theme.space[3],
-      opacity: 0.5,
+      gap: theme.space[2],
       // borderWidth: 1,
       // borderColor: 'red',
     },
     iconButton: {
-      width: theme.space[5],
-      height: theme.space[5],
-      borderRadius: theme.space[3],
+      width: SEND_BUTTON_HEIGHT,
+      height: SEND_BUTTON_HEIGHT,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
@@ -112,8 +118,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       backgroundColor: theme.colors.button,
       paddingVertical: theme.space[2],
       paddingHorizontal: theme.space[3],
-      borderRadius: theme.space[6],
+      borderRadius: SEND_BUTTON_HEIGHT / 2,
       alignSelf: 'flex-end',
+      height: SEND_BUTTON_HEIGHT,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     sendButtonDisabled: {
       backgroundColor: theme.colors.buttonDisabled,
@@ -148,10 +157,28 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     setVisibleHeight(e.nativeEvent.layout.height);
   }, []);
 
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      base64: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setPickedImage({
+        uri: asset.uri,
+        base64: asset.base64 || '',
+        width: asset.width || 200,
+        height: asset.height || 200,
+      });
+    }
+  };
+
   const handleSendMessage = async () => {
     const text = inputText;
     setInputText('');
-    if (!text.trim() || isLoading) return;
+    if ((!text.trim() && !pickedImage) || isLoading) return;
     const trimmedText = text.trim();
     setIsLoading(true);
     const userMessage: ChatMessage = {
@@ -160,8 +187,13 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       isUser: true,
       timestamp: Date.now(),
       threadId: conversationId,
+      imageUri: pickedImage?.uri,
+      imageBase64: pickedImage?.base64,
+      imageWidth: pickedImage?.width,
+      imageHeight: pickedImage?.height,
     };
     setMessages(prev => [...prev, userMessage]);
+    setPickedImage(null);
     try {
       console.log('[ChatScreen] Sending message:', trimmedText);
       console.log('[ChatScreen] Using server URL:', API_SERVER_URL);
@@ -169,6 +201,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       const response = await axios.post(`${API_SERVER_URL}/api/chat`, {
         auth_token: API_AUTH_TOKEN,
         message: trimmedText,
+        image: pickedImage
+          ? {
+              base64: pickedImage.base64,
+              width: pickedImage.width,
+              height: pickedImage.height,
+              uri: pickedImage.uri,
+            }
+          : undefined,
       });
       console.log('[ChatScreen] Server response:', response.data);
       const reply = (response.data as { reply?: string })?.reply || '';
@@ -318,15 +358,31 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
                   numberOfLines={3}
                   blurOnSubmit={true}
                   editable={!isLoading}
+                  // For local dev: send on Enter (iOS only)
+                  onSubmitEditing={
+                    process.env.NODE_ENV === 'development' && Platform.OS === 'ios'
+                      ? handleSendMessage
+                      : undefined
+                  }
                 />
+                
               </View>
               <View style={styles.inputActions}>
               <View style={styles.iconButtonContainer}>
-                <TouchableOpacity style={styles.iconButton} disabled={true} onPress={() => { /* TODO: Camera functionality */ }}>
-                  <MaterialCommunityIcons name="camera-outline" size={24} color={theme.colors.text} />
+              {pickedImage ? (
+                <TouchableOpacity onPress={() => setPickedImage(null)}>
+                  <Image
+                    source={{ uri: pickedImage.uri }}
+                    style={{ width: SEND_BUTTON_HEIGHT, height: SEND_BUTTON_HEIGHT, borderRadius: 8, marginLeft: 8 }}
+                  />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton} disabled={true} onPress={() => { /* TODO: Microphone functionality */ }}>
-                  <MaterialCommunityIcons name="microphone-outline" size={24} color={theme.colors.text} />
+              ) : (
+                <TouchableOpacity style={styles.iconButton} disabled={false} onPress={handlePickImage}>
+                  <MaterialCommunityIcons name="camera-outline" size={24} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+                <TouchableOpacity style={{...styles.iconButton, opacity: 0.3}} disabled={true} onPress={() => { /* TODO: Microphone functionality */ }}>
+                  <MaterialCommunityIcons name="microphone-outline" size={24} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
                 </View>
                 <TouchableOpacity

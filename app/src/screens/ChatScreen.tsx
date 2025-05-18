@@ -9,6 +9,9 @@ import { JournalScreen } from './JournalScreen';
 import { primativeColors } from '@/src/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChatMessage } from '@/src/types';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { HeaderBar } from '@/src/components/HeaderBar';
 
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
@@ -17,14 +20,20 @@ interface ChatScreenProps {
   conversationId: string;
 }
 
+// Define the stack param list
+export type RootStackParamList = {
+  Chat: { conversationId: string };
+  Journal: undefined;
+};
+
 export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Chat'>>();
   const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showJournal, setShowJournal] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(0);
 
@@ -178,58 +187,56 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.profileContainer}>
-        <TouchableOpacity onPress={() => setShowJournal(j => !j)} activeOpacity={0.7}>
-          <Image
-            source={require('../../assets/dad.png')}
-            style={styles.profileImage}
-            resizeMode="cover"
-          />
-        </TouchableOpacity>
-      </View>
+      <HeaderBar
+        center={
+          <TouchableOpacity onPress={() => navigation.navigate('Journal')} activeOpacity={0.7}>
+            <Image
+              source={require('../../assets/dad.png')}
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+        }
+      />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {showJournal ? (
-          <JournalScreen />
-        ) : (
-          <View style={styles.chatScreenContent}>
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              renderItem={renderMessage}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.messagesList}
-              onContentSizeChange={handleContentSizeChange}
-              onLayout={handleLayout}
-              showsVerticalScrollIndicator={false}
-              automaticallyAdjustKeyboardInsets={true}
-              keyboardDismissMode="on-drag"
-              keyboardShouldPersistTaps="handled"
-              ListFooterComponent={renderFooter}
+        <View style={styles.chatScreenContent}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={handleContentSizeChange}
+            onLayout={handleLayout}
+            showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets={true}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            ListFooterComponent={renderFooter}
+          />
+          <View style={styles.inputRow}>
+            <View style={styles.bottomBarMask}/>
+            <AutoGrowingTextInput
+              style={styles.input}
+              value={inputText}
+              onChangeText={handleTextChange}
+              placeholder="Type a message..."
+              placeholderTextColor={primativeColors['70']}
+              multiline
+              onSubmitEditing={() => {
+                if (canSendMessage) {
+                  handleSendMessage();
+                }
+              }}
+              editable={!isLoading}
+              textColor={theme.colors.text}
             />
-            <View style={styles.inputRow}>
-              <View style={styles.bottomBarMask}/>
-              <AutoGrowingTextInput
-                style={styles.input}
-                value={inputText}
-                onChangeText={handleTextChange}
-                placeholder="Type a message..."
-                placeholderTextColor={primativeColors['70']}
-                multiline
-                onSubmitEditing={() => {
-                  if (canSendMessage) {
-                    handleSendMessage();
-                  }
-                }}
-                editable={!isLoading}
-                textColor={theme.colors.text}
-              />
-            </View>
           </View>
-        )}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

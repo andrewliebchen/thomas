@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import Constants from 'expo-constants';
 import axios from 'axios';
+import PagerView from 'react-native-pager-view';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from './ChatScreen';
+import { HeaderBar } from '@/src/components/HeaderBar';
 
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
@@ -16,6 +22,7 @@ export interface JournalEntry {
 
 export const JournalScreen: React.FC = () => {
   const theme = useTheme();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Journal'>>();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +37,9 @@ export const JournalScreen: React.FC = () => {
           headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` },
         });
         const data = response.data as any;
-        console.log('[JournalScreen] API response:', data);
         setEntries(data.journalEntries || []);
-        console.log('[JournalScreen] Parsed entries:', data.journalEntries || []);
       } catch (err: any) {
         setError('Failed to load journal entries.');
-        console.error('[JournalScreen] Error fetching entries:', err);
       } finally {
         setLoading(false);
       }
@@ -47,28 +51,48 @@ export const JournalScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-      padding: theme.space[3],
+      paddingTop: theme.space[3],
+    },
+    iconButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    closeButton: {
+      backgroundColor: theme.colors.border,
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
+    },
+    pager: {
+      flex: 1,
     },
     entry: {
+      flex: 1,
       backgroundColor: theme.colors.card,
-      borderRadius: 16,
-      padding: theme.space[3],
-      marginBottom: theme.space[3],
-      shadowColor: '#000',
-      shadowOpacity: 0.02,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 2,
-      marginHorizontal: theme.space[3],
+      borderRadius: 24,
+      padding: theme.space[4],
+      margin: theme.space[3],
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     entryContent: {
-      fontSize: theme.fontSizes[2],
+      fontSize: theme.fontSizes[3],
       color: theme.colors.text,
       fontFamily: theme.fonts.body,
+      lineHeight: 26,
     },
     entryDate: {
-      fontSize: theme.fontSizes[0],
-      marginTop: theme.space[3],
+      fontSize: theme.fontSizes[1],
+      fontFamily: theme.fonts.body,
+      textAlign: 'center',
+      marginBottom: theme.space[2],
+      color: theme.colors.textSecondary,
     },
     error: {
       color: theme.colors.notification,
@@ -86,27 +110,52 @@ export const JournalScreen: React.FC = () => {
     },
   });
 
-  const renderItem = ({ item }: { item: JournalEntry }) => (
-    <View style={styles.entry}>
-      <Text style={styles.entryContent}>{item.content}</Text>
-      <Text style={styles.entryDate}>{new Date(item.createdAt).toLocaleString()}</Text>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderBar
+        left={
+          <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+            <MaterialCommunityIcons name="star-outline" size={28} color={theme.colors.text} />
+          </TouchableOpacity>
+        }
+        center={
+          <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+            <MaterialCommunityIcons name="window-close" size={36} color={theme.colors.text} />
+          </TouchableOpacity>
+        }
+        right={
+          <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+            <MaterialCommunityIcons name="delete-outline" size={28} color={theme.colors.text} />
+          </TouchableOpacity>
+        }
+      />
+      {/* Carousel */}
       {loading ? (
         <ActivityIndicator size="large" color={theme.colors.primary} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
+      ) : entries.length === 0 ? (
+        <Text style={styles.empty}>No journal entries found.</Text>
       ) : (
-        <FlatList
-          data={entries}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={styles.empty}>No journal entries found.</Text>}
-          contentInset={{ top: 60, bottom: 0, left: 0, right: 0 }}
-        />
+        <PagerView style={styles.pager} initialPage={0}>
+          {entries.map((item, idx) => (
+            <View style={styles.entry} key={item.id}>
+              <Text style={styles.entryDate}>{
+                new Date(item.createdAt).toLocaleString(undefined, {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                }).replace(',', '').replace(',', ' at')
+              }</Text>
+              <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+                <Text style={styles.entryContent}>{item.content}</Text>
+              </ScrollView>
+            </View>
+          ))}
+        </PagerView>
       )}
     </SafeAreaView>
   );

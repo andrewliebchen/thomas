@@ -27,8 +27,8 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
     },
     messageText: {
       fontSize: isUser ? theme.fontSizes[2] : 20,
-      lineHeight: isUser ? 22 : 1.3 * 20,
-      color: isUser ? theme.colors.userBubbleText : primativeColors['15'],
+      lineHeight: isUser ? 22 : 26,
+      color: isUser ? theme.colors.userBubbleText : theme.colors.textSecondary,
       fontFamily: theme.fonts.body,
     },
   });

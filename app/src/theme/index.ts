@@ -3,6 +3,7 @@ import { Theme } from '@react-navigation/native';
 export interface DadTheme extends Theme {
   colors: {
     text: string;
+    textSecondary: string;
     background: string;
     primary: string;
     secondary: string;
@@ -63,6 +64,7 @@ export const theme: DadTheme = {
   dark: false,
   colors: {
     text: primativeColors["20"], // Dark brown for text
+    textSecondary: primativeColors["40"], // Dark brown for text
     background: primativeColors["98"], // Very light background
     primary: primativeColors["80"], // Soft pink accent
     secondary: '#7FBEEB', // (Keep as is or update if needed)

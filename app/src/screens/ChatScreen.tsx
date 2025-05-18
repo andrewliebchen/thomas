@@ -326,7 +326,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
                   ]}
                   value={inputText}
                   onChangeText={setInputText}
-                  placeholder="Type a message..."
+                  placeholder="What do you want to talk about?"
                   placeholderTextColor={primativeColors['60']}
                   multiline={true}
                   numberOfLines={3}

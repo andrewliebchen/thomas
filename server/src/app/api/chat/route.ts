@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Use a fixed user identifier for now
     const userId = 'web-client';

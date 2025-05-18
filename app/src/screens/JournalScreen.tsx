@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import Constants from 'expo-constants';
 import axios from 'axios';
@@ -53,6 +53,7 @@ export const JournalScreen: React.FC = () => {
     container: {
       flex: 1,
       backgroundColor: theme.colors.card,
+      gap: theme.space[2],
     },
     iconButton: {
       width: 40,
@@ -78,7 +79,7 @@ export const JournalScreen: React.FC = () => {
       backgroundColor: theme.colors.background,
       borderRadius: 24,
       padding: theme.space[4],
-      margin: theme.space[3],
+      marginHorizontal: theme.space[3],
     },
     entryContent: {
       fontSize: theme.fontSizes[3],
@@ -130,6 +131,44 @@ export const JournalScreen: React.FC = () => {
     }
   };
 
+  // Delete the current journal entry with confirmation
+  const deleteCurrentEntry = async () => {
+    const entry = entries[currentPage];
+    if (!entry) return;
+    Alert.alert(
+      'Delete Journal Entry',
+      'Are you sure you want to delete this journal entry? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const config: any = {
+                headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` },
+                data: { id: entry.id },
+              };
+              await axios.delete(`${API_SERVER_URL}/api/journal`, config);
+              setEntries((prev) => {
+                const newEntries = prev.filter((_, idx) => idx !== currentPage);
+                // Adjust currentPage if needed
+                if (newEntries.length === 0) {
+                  setCurrentPage(0);
+                } else if (currentPage >= newEntries.length) {
+                  setCurrentPage(newEntries.length - 1);
+                }
+                return newEntries;
+              });
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete journal entry.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <HeaderBar
@@ -152,9 +191,13 @@ export const JournalScreen: React.FC = () => {
           </TouchableOpacity>
         }
         right={
-          <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
-            <MaterialCommunityIcons name="delete-outline" size={28} color={theme.colors.text} />
-          </TouchableOpacity>
+          entries.length > 0 ? (
+            <TouchableOpacity style={styles.iconButton} onPress={deleteCurrentEntry}>
+              <MaterialCommunityIcons name="delete-outline" size={28} color={theme.colors.text} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.iconButton} />
+          )
         }
       />
       {/* Carousel */}
@@ -170,6 +213,7 @@ export const JournalScreen: React.FC = () => {
         <PagerView
           style={styles.pager}
           initialPage={0}
+          key={entries.length}
           onPageSelected={e => setCurrentPage(e.nativeEvent.position)}
         >
           {entries.map((item, idx) => (

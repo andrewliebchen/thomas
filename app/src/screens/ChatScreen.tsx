@@ -167,7 +167,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     if (isLoading) {
       return (
         <View>
-          <Text style={{ fontSize: 20, color: primativeColors['60'], fontFamily: theme.fonts.body }}>Thinking...</Text>
+          <Text style={{ fontSize: 16, color: primativeColors['60'], fontFamily: theme.fonts.body }}>Thinking...</Text>
         </View>
       );
     }

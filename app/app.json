@@ -4,14 +4,13 @@
     "slug": "dad-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/dad.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F09281"
+      "resizeMode": "cover",
     },
     "ios": {
       "supportsTablet": true,

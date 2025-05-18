@@ -14,6 +14,9 @@ export interface DadTheme extends Theme {
     notification: string;
     userBubbleBg: string;
     userBubbleText: string;
+    button: string;
+    buttonText: string;
+    buttonDisabled: string;
   };
   fonts: {
     body: string;
@@ -62,6 +65,26 @@ export const primativeColors = {
   "00": `hsl(${base.hue}, ${base.saturation}%, 0%)`,
 };
 
+const baseThemeValues = {
+  fonts: {
+    body: 'System',
+    heading: 'System',
+    monospace: 'Menlo',
+  },
+  fontWeights: {
+    body: '400',
+    heading: '700',
+    bold: '700',
+  },
+  lineHeights: {
+    body: 1.4, // This will be overridden in darkTheme if needed
+    heading: 1.25,
+  },
+  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
+  space: [0, 4, 8, 16, 24, 32, 48, 64],
+  breakpoints: ['0px', '40em', '52em', '64em'],
+};
+
 // Updated theme using primitive colors
 export const theme: DadTheme = {
   dark: false,
@@ -75,24 +98,11 @@ export const theme: DadTheme = {
     border: primativeColors["85"], // Light brown for borders
     userBubbleBg: primativeColors["92"], // User message bubble background
     userBubbleText: primativeColors['40'], // User message bubble text
+    button: primativeColors['20'], // Button color
+    buttonText: primativeColors['90'], // Button text color
+    buttonDisabled: primativeColors['70'], // Button disabled color
   },
-  fonts: {
-    body: 'System',
-    heading: 'System',
-    monospace: 'Menlo',
-  },
-  fontWeights: {
-    body: '400',
-    heading: '700',
-    bold: '700',
-  },
-  lineHeights: {
-    body: 1.4,
-    heading: 1.25,
-  },
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
-  space: [0, 4, 8, 16, 24, 32, 48, 64],
-  breakpoints: ['0px', '40em', '52em', '64em'],
+  ...baseThemeValues,
 };
 
 export const darkTheme: DadTheme = {
@@ -107,22 +117,13 @@ export const darkTheme: DadTheme = {
     border: primativeColors["20"], // Border
     userBubbleBg: primativeColors['08'], // User message bubble background
     userBubbleText: primativeColors['60'], // User message bubble text
+    button: primativeColors['80'], // Button color
+    buttonText: primativeColors['10'], // Button text color
+    buttonDisabled: primativeColors['30'], // Button disabled color
   },
-  fonts: {
-    body: 'System',
-    heading: 'System',
-    monospace: 'Menlo',
-  },
-  fontWeights: {
-    body: '400',
-    heading: '700',
-    bold: '700',
-  },
+  ...baseThemeValues,
   lineHeights: {
-    body: 1.5,
-    heading: 1.25,
+    ...baseThemeValues.lineHeights,
+    body: 1.5, // Override for dark theme
   },
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
-  space: [0, 4, 8, 16, 24, 32, 48, 64],
-  breakpoints: ['0px', '40em', '52em', '64em'],
 };

@@ -39,7 +39,7 @@ export async function generateResponse(message: string, context?: { from?: strin
         } as OpenAI.ChatCompletionMessageParam);
       }
       // Fetch last 10 messages (chronological order)
-      const recentMessages = await getRecentMessages(context.conversationId, 10);
+      const recentMessages = await getRecentMessages(context.conversationId, 10, false, true);
       console.log('generateResponse: fetched recent messages', recentMessages);
       messages = messages.concat(
         (recentMessages as JournalMessage[])

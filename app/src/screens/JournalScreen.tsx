@@ -21,6 +21,11 @@ export interface JournalEntry {
   favorited?: boolean;
 }
 
+type JournalEntriesResponse = {
+  journalEntries: JournalEntry[];
+  totalJournalEntries: number;
+};
+
 export const JournalScreen: React.FC = () => {
   const theme = useTheme();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Journal'>>();
@@ -28,6 +33,7 @@ export const JournalScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -38,7 +44,7 @@ export const JournalScreen: React.FC = () => {
           params: { limit: 20, offset: 0 },
           headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` },
         });
-        const data = response.data as any;
+        const data = response.data as JournalEntriesResponse;
         setEntries(data.journalEntries || []);
       } catch (err: any) {
         setError('Failed to load journal entries.');
@@ -113,14 +119,15 @@ export const JournalScreen: React.FC = () => {
   // Toggle favorited status for the current entry
   const toggleFavorite = async () => {
     const entry = entries[currentPage];
-    if (!entry) return;
+    if (!entry || actionLoading) return;
+    setActionLoading(true);
     try {
       const response = await axios.patch(
         `${API_SERVER_URL}/api/journal`,
         { id: entry.id, favorited: !entry.favorited },
         { headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` } }
       );
-      const updated = (response.data as any).journalEntry;
+      const updated = (response.data as { journalEntry: JournalEntry }).journalEntry;
       setEntries((prev) =>
         prev.map((e, idx) =>
           idx === currentPage ? { ...e, favorited: updated.favorited } : e
@@ -128,13 +135,15 @@ export const JournalScreen: React.FC = () => {
       );
     } catch (err) {
       // Optionally show error
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // Delete the current journal entry with confirmation
   const deleteCurrentEntry = async () => {
     const entry = entries[currentPage];
-    if (!entry) return;
+    if (!entry || actionLoading) return;
     Alert.alert(
       'Delete Journal Entry',
       'Are you sure you want to delete this journal entry? This action cannot be undone.',
@@ -144,6 +153,7 @@ export const JournalScreen: React.FC = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            setActionLoading(true);
             try {
               const config: any = {
                 headers: { Authorization: `Bearer ${API_AUTH_TOKEN}` },
@@ -162,6 +172,8 @@ export const JournalScreen: React.FC = () => {
               });
             } catch (err) {
               Alert.alert('Error', 'Failed to delete journal entry.');
+            } finally {
+              setActionLoading(false);
             }
           },
         },
@@ -174,7 +186,11 @@ export const JournalScreen: React.FC = () => {
       <HeaderBar
         left={
           entries.length > 0 ? (
-            <TouchableOpacity style={styles.iconButton} onPress={toggleFavorite}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={toggleFavorite}
+              disabled={actionLoading}
+            >
               <MaterialCommunityIcons
                 name={entries[currentPage]?.favorited ? 'heart' : 'heart-outline'}
                 size={28}
@@ -192,7 +208,11 @@ export const JournalScreen: React.FC = () => {
         }
         right={
           entries.length > 0 ? (
-            <TouchableOpacity style={styles.iconButton} onPress={deleteCurrentEntry}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={deleteCurrentEntry}
+              disabled={actionLoading}
+            >
               <MaterialCommunityIcons name="delete-outline" size={28} color={theme.colors.text} />
             </TouchableOpacity>
           ) : (

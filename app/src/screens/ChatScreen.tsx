@@ -254,7 +254,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
           timestamp: new Date(msg.createdAt).getTime(),
           threadId: conversationId,
         }));
-        console.log('[ChatScreen] Fetched messages:', mapped);
+        
         setMessages(mapped);
         setInitialLoadDone(true);
         console.log('[ChatScreen] initialLoadDone set to true');

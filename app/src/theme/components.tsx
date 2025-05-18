@@ -26,22 +26,6 @@ export const Heading: React.FC<TextProps> = ({ style, ...props }) => {
   );
 };
 
-export const Container: React.FC<View['props']> = ({ style, ...props }) => {
-  const theme = useTheme();
-  return (
-    <View
-      style={[
-        {
-          backgroundColor: theme.colors.background,
-          padding: theme.space[3],
-        },
-        style,
-      ]}
-      {...props}
-    />
-  );
-};
-
 export const Input: React.FC<TextInput['props']> = ({ style, ...props }) => {
   const theme = useTheme();
   return (

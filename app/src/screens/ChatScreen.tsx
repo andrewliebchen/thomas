@@ -76,9 +76,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     input: {
       flex: 1,
       backgroundColor: 'transparent',
-      fontSize: theme.fontSizes[2],
+      fontSize: theme.fontSizes.small,
       minHeight: INPUT_LINE_HEIGHT * 2,
       lineHeight: INPUT_LINE_HEIGHT,
+      fontFamily: theme.fonts.body,
+      color: theme.colors.text,
+      paddingTop: theme.space[1],
+      paddingBottom: theme.space[1],
+      textAlignVertical: 'top',
     },
     inputActions: {
       flexDirection: 'row',
@@ -96,9 +101,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       opacity: 0.5,
     },
     iconButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: theme.space[6],
+      height: theme.space[6],
+      borderRadius: theme.space[3],
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: 'transparent',
@@ -107,7 +112,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       backgroundColor: theme.colors.button,
       paddingVertical: theme.space[2],
       paddingHorizontal: theme.space[3],
-      borderRadius: 24,
+      borderRadius: theme.space[6] / 3,
       alignSelf: 'flex-end',
     },
     sendButtonDisabled: {
@@ -115,9 +120,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     },
     sendButtonText: {
       color: theme.colors.buttonText,
-      fontSize: theme.fontSizes[2],
+      fontSize: theme.fontSizes.small,
       fontFamily: theme.fonts.body,
-      fontWeight: '600', // semibold
+      fontWeight: 'bold',
     },
     bottomBarMask: {
       position: 'absolute',
@@ -219,7 +224,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     if (isLoading) {
       return (
         <View>
-          <Text style={{ fontSize: 16, color: primativeColors['60'], fontFamily: theme.fonts.body }}>Thinking...</Text>
+          <Text style={{ fontSize: theme.fontSizes.small, color: theme.colors.textSecondary, fontFamily: theme.fonts.body }}>Thinking...</Text>
         </View>
       );
     }
@@ -304,22 +309,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
               <View style={styles.inputRow}>
                 <View style={styles.bottomBarMask}/>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      height: 60, // 3 lines * 20px
-                      fontSize: theme.fontSizes[2],
-                      color: theme.colors.text,
-                      backgroundColor: 'transparent',
-                      paddingTop: 8,
-                      paddingBottom: 8,
-                      textAlignVertical: 'top',
-                    },
-                  ]}
+                  style={styles.input}
                   value={inputText}
                   onChangeText={setInputText}
                   placeholder="What do you want to talk about?"
-                  placeholderTextColor={primativeColors['60']}
+                  placeholderTextColor={theme.colors.textSecondary + '80'}
                   multiline={true}
                   numberOfLines={3}
                   blurOnSubmit={true}

@@ -29,7 +29,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ left, center, right, style
       flexDirection: 'row',
     },
     side: {
-      minWidth: 40,
+      minWidth: theme.space[6],
       alignItems: 'center',
       justifyContent: 'center',
     },

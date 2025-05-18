@@ -6,12 +6,9 @@ export interface DadTheme extends Theme {
     textSecondary: string;
     background: string;
     primary: string;
-    secondary: string;
-    accent: string;
     muted: string;
     card: string;
     border: string;
-    notification: string;
     userBubbleBg: string;
     userBubbleText: string;
     button: string;
@@ -28,11 +25,14 @@ export interface DadTheme extends Theme {
     heading: string;
     bold: string;
   };
-  lineHeights: {
-    body: number;
-    heading: number;
+  fontSizes: {
+    large: number;
+    small: number;
   };
-  fontSizes: number[];
+  lineHeights: {
+    large: number;
+    small: number;
+  };
   space: number[];
   breakpoints: string[];
   dark: boolean;
@@ -76,11 +76,14 @@ const baseThemeValues = {
     heading: '700',
     bold: '700',
   },
-  lineHeights: {
-    body: 1.4, // This will be overridden in darkTheme if needed
-    heading: 1.25,
+  fontSizes: {
+    large: 20,
+    small: 16,
   },
-  fontSizes: [12, 14, 16, 20, 24, 32, 48, 64],
+  lineHeights: {
+    large: 28,
+    small: 22,
+  },
   space: [0, 4, 8, 16, 24, 32, 48, 64],
   breakpoints: ['0px', '40em', '52em', '64em'],
 };
@@ -122,8 +125,4 @@ export const darkTheme: DadTheme = {
     buttonDisabled: primativeColors['30'], // Button disabled color
   },
   ...baseThemeValues,
-  lineHeights: {
-    ...baseThemeValues.lineHeights,
-    body: 1.5, // Override for dark theme
-  },
 };

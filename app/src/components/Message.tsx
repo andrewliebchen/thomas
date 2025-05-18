@@ -26,8 +26,8 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
       borderColor: 'transparent',
     },
     messageText: {
-      fontSize: isUser ? theme.fontSizes[2] : 20,
-      lineHeight: isUser ? 22 : 28,
+      fontSize: isUser ? theme.fontSizes.small : theme.fontSizes.large,
+      lineHeight: isUser ? theme.lineHeights.small : theme.lineHeights.large,
       color: isUser ? theme.colors.userBubbleText : theme.colors.text,
       fontFamily: theme.fonts.body,
     },

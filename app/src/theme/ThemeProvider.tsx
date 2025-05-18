@@ -18,8 +18,6 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const colorScheme = useColorScheme();
-  console.log('colorScheme', colorScheme);
-  console.log('darkTheme', darkTheme);
   const currentTheme = colorScheme === 'dark' ? darkTheme : theme;
   return (
     <ThemeContext.Provider value={currentTheme}>

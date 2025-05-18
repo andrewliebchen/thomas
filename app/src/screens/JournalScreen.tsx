@@ -85,7 +85,7 @@ export const JournalScreen: React.FC = () => {
       fontSize: theme.fontSizes[3],
       color: theme.colors.text,
       fontFamily: theme.fonts.body,
-      lineHeight: 26,
+      lineHeight: 28,
     },
     entryDate: {
       fontSize: theme.fontSizes[1],

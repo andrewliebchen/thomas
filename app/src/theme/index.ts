@@ -96,12 +96,12 @@ export const theme: DadTheme = {
 export const darkTheme: DadTheme = {
   dark: true,
   colors: {
-    text: primativeColors["80"], // Light text
+    text: primativeColors["95"], // Light text
     textSecondary: primativeColors["60"],
     background: primativeColors["02"], // Very dark background
     primary: primativeColors["20"], // Accent
     muted: primativeColors["05"], // Muted dark
-    card: primativeColors["05"], // Card background
+    card: primativeColors["10"], // Card background
     border: primativeColors["10"], // Border
     userBubbleBg: primativeColors['10'], // User message bubble background
     userBubbleText: primativeColors['70'], // User message bubble text

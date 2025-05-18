@@ -1,22 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import { View, FlatList, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { AutoGrowingTextInput } from '@/src/components/AutoGrowingTextInput';
 import { Message } from '@/src/components/Message';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import { JournalScreen } from './JournalScreen';
 import { primativeColors } from '@/src/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Minimal local ChatMessage type
-type ChatMessage = {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: number;
-};
+import { ChatMessage } from '@/src/types';
 
 const API_SERVER_URL = process.env.API_SERVER_URL || Constants?.expoConfig?.extra?.API_SERVER_URL;
 const API_AUTH_TOKEN = process.env.API_AUTH_TOKEN || Constants?.expoConfig?.extra?.API_AUTH_TOKEN;
@@ -116,6 +108,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
       text: trimmedText,
       isUser: true,
       timestamp: Date.now(),
+      threadId: conversationId,
     };
     setMessages(prev => [...prev, userMessage]);
     try {
@@ -133,6 +126,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
         text: reply,
         isUser: false,
         timestamp: Date.now(),
+        threadId: conversationId,
       };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
@@ -142,6 +136,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
         text: 'Error: Failed to get reply from server.',
         isUser: false,
         timestamp: Date.now(),
+        threadId: conversationId,
       }]);
     } finally {
       setIsLoading(false);
@@ -180,15 +175,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   };
 
   const canSendMessage = inputText.trim().length > 0;
-
-  // Handle double enter (\n\n) to send in simulator
-  const handleInputKeyPress = (e: any) => {
-    if (e.nativeEvent.key === 'Enter') {
-      if (inputText.endsWith('\n')) {
-        handleSendMessage();
-      }
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>

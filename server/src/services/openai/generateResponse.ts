@@ -11,6 +11,7 @@ type JournalEntry = {
   content: string;
   createdAt: Date;
   favorited?: boolean;
+  messageIds: string[];
 };
 
 export async function generateResponse(message: string, context?: { from?: string; conversationId?: string }): Promise<string> {
@@ -25,8 +26,8 @@ export async function generateResponse(message: string, context?: { from?: strin
     console.log('generateResponse: context', context);
     if (context?.conversationId) {
       console.log('generateResponse: using conversationId', context.conversationId);
-      // Fetch last 10 journal entries
-      const journalEntries = await getRecentJournalEntries(context.conversationId, 10);
+      // Fetch all journal entries
+      const journalEntries = await getRecentJournalEntries(context.conversationId);
       console.log('generateResponse: fetched journal entries', journalEntries);
       if (journalEntries.length > 0) {
         messages.push({

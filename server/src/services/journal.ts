@@ -10,6 +10,8 @@ export interface JournalEntry {
   conversationId: string;
   content: string;
   createdAt: Date;
+  favorited?: boolean;
+  messageIds: string[];
 }
 
 export interface Message {
@@ -20,22 +22,26 @@ export interface Message {
 }
 
 // Create a journal entry in the database
-export async function createJournalEntry(conversationId: string, content: string) {
+export async function createJournalEntry(conversationId: string, content: string, messageIds: string[]) {
   return prisma.journalEntry.create({
     data: {
       conversationId,
       content,
+      messageIds,
     },
   });
 }
 
 // Get recent journal entries for a conversation
-export async function getRecentJournalEntries(conversationId: string, limit: number = 3): Promise<JournalEntry[]> {
-  return prisma.journalEntry.findMany({
+export async function getRecentJournalEntries(conversationId: string, limit?: number): Promise<JournalEntry[]> {
+  const query: any = {
     where: { conversationId },
     orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  };
+  if (typeof limit === 'number' && limit > 0) {
+    query.take = limit;
+  }
+  return prisma.journalEntry.findMany(query);
 }
 
 // Generate a journal entry using OpenAI
@@ -66,16 +72,16 @@ export async function generateJournalEntry(messages: { content: string; directio
 
 // Buffer/trigger logic for journal entry creation
 export async function handleMessageBufferAndJournal(conversationId: string): Promise<void> {
-  // Buffer threshold: 6 messages (3 user, 3 dad)
+  // Buffer threshold: 10 messages (5 user, 5 dad)
   const { getRecentMessages } = await import('./message');
-  const recentMessages: Message[] = await getRecentMessages(conversationId, 6, true); // Only unjournaled
+  const recentMessages: Message[] = await getRecentMessages(conversationId, 10, true); // Only unjournaled
   const userCount = recentMessages.filter((m: Message) => m.direction === 'INCOMING').length;
   const dadCount = recentMessages.filter((m: Message) => m.direction === 'OUTGOING').length;
-  if (recentMessages.length === 6 && userCount >= 3 && dadCount >= 3) {
+  if (recentMessages.length === 10 && userCount >= 5 && dadCount >= 5) {
     const lastJournal = await getRecentJournalEntries(conversationId, 1);
     const lastJournalContent = lastJournal[0]?.content;
     const journalText = await generateJournalEntry([...recentMessages].reverse(), lastJournalContent);
-    await createJournalEntry(conversationId, journalText);
+    await createJournalEntry(conversationId, journalText, recentMessages.map((m) => m.id));
     // Mark these messages as journaled
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();

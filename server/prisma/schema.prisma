@@ -50,6 +50,7 @@ model JournalEntry {
   content        String
   createdAt      DateTime      @default(now())
   favorited      Boolean       @default(false)
+  messageIds     String[]      // Array of message IDs that comprise this journal entry
 }
 
 enum Direction {

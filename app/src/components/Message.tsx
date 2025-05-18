@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { StyledText } from '@/src/theme/components';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { ChatMessage } from '@/src/types';
+import { primativeColors } from '@/src/theme';
 
 interface MessageProps {
   message: ChatMessage;
@@ -11,34 +12,24 @@ interface MessageProps {
 export const Message: React.FC<MessageProps> = ({ message }) => {
   const theme = useTheme();
   
+  const isUser = message.isUser;
   const styles = StyleSheet.create({
     messageContainer: {
-      maxWidth: '85%',
-      paddingHorizontal: theme.space[3],
-      paddingVertical: theme.space[2],
-      borderRadius: 16,
-      shadowColor: theme.colors.text,
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.05,
-      shadowRadius: 1,
-      elevation: 1,
-      marginVertical: theme.space[1],
-      marginLeft: message.isUser ? 12 : 12,
-      marginRight: message.isUser ? 12 : 12,
-      alignSelf: message.isUser ? 'flex-end' : 'flex-start',
-      backgroundColor: message.isUser 
-        ? theme.colors.primary 
-        : theme.colors.card,
+      paddingHorizontal: isUser ? theme.space[3] : 0,
+      paddingVertical: isUser ? theme.space[2] : 0,
+      borderRadius: isUser ? 20 : 0,
+      minHeight: isUser ? 40 : undefined,
+      marginLeft: isUser ? theme.space[6] : 0,
+      alignSelf: isUser ? 'flex-end' : 'flex-start',
+      backgroundColor: isUser ? theme.colors.userBubbleBg : 'transparent',
+      borderWidth: 0,
+      borderColor: 'transparent',
     },
     messageText: {
-      fontSize: theme.fontSizes[2],
-      lineHeight: 20,
-      color: message.isUser 
-        ? '#FFFFFF' 
-        : theme.colors.text,
+      fontSize: isUser ? theme.fontSizes[2] : 20,
+      lineHeight: isUser ? 22 : 1.3 * 20,
+      color: isUser ? theme.colors.userBubbleText : primativeColors['15'],
+      fontFamily: theme.fonts.body,
     },
   });
 

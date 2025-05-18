@@ -31,7 +31,9 @@ export const AutoGrowingTextInput: React.FC<AutoGrowingTextInputProps> = ({
   
   // Force update height when value changes
   useEffect(() => {
-    if (inputRef.current) {
+    if (value === '') {
+      setHeight(36);
+    } else if (inputRef.current) {
       // @ts-ignore - accessing private API
       inputRef.current.setNativeProps({ style: { height: 'auto' } });
       // @ts-ignore - accessing private API

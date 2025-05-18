@@ -1,11 +1,14 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { View, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { View, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeProvider';
 import { AutoGrowingTextInput } from '@/src/components/AutoGrowingTextInput';
 import { Message } from '@/src/components/Message';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { JournalScreen } from './JournalScreen';
+import { primativeColors } from '@/src/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Minimal local ChatMessage type
 type ChatMessage = {
@@ -24,55 +27,67 @@ interface ChatScreenProps {
 
 export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [visibleHeight, setVisibleHeight] = useState(0);
+
+  const PROFILE_IMAGE_SIZE = 72;
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#FFF',
-    },
-    chatContainer: {
-      flex: 1,
       backgroundColor: theme.colors.background,
-      paddingTop: theme.space[2],
+      gap: theme.space[2],
+    },
+    profileContainer: {
+      alignItems: 'center',
+    },
+    profileImage: {
+      width: PROFILE_IMAGE_SIZE,
+      height: PROFILE_IMAGE_SIZE,
+      borderRadius: PROFILE_IMAGE_SIZE / 2,
+    },
+    chatScreenContent: {
+      flex: 1,
     },
     messagesList: {
-      flexGrow: 1,
-      paddingBottom: theme.space[3],
-    },
-    inputContainer: {
-      flexDirection: 'row',
+      flex: 1,
       padding: theme.space[3],
-      backgroundColor: '#FFF',
+      gap: theme.space[3],
+    },
+    inputRow: {
+      flexDirection: 'row',
       alignItems: 'flex-end',
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.border,
+      backgroundColor: theme.colors.card,
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      borderWidth: 1,
+      borderBottomWidth: 0,
+      borderColor: theme.colors.border,
+      padding: theme.space[3],
+      paddingBottom: theme.space[1],
       gap: theme.space[2],
+      position: 'relative',
     },
     input: {
       flex: 1,
-      paddingVertical: theme.space[2],
       backgroundColor: 'transparent',
       fontSize: theme.fontSizes[2],
       maxHeight: 120,
       minHeight: 40,
     },
-    sendButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: Platform.OS === 'ios' ? 6 : 2,
-    },
-    buttonContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+    bottomBarMask: {
+      position: 'absolute',
+      bottom: -34,
+      left: 0,
+      right: 0,
+      height: 34,
+      backgroundColor: theme.colors.card,
     },
   });
 
@@ -82,18 +97,19 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
     }
   }, [messages.length]);
 
-  const handleContentSizeChange = useCallback(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
+  const handleContentSizeChange = useCallback((w: number, h: number) => {
+    setContentHeight(h);
+  }, []);
 
-  const handleLayout = useCallback(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
+  const handleLayout = useCallback((e: any) => {
+    setVisibleHeight(e.nativeEvent.layout.height);
+  }, []);
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async () => {
+    const text = inputText;
+    setInputText('');
     if (!text.trim() || isLoading) return;
     const trimmedText = text.trim();
-    setInputText('');
     setIsLoading(true);
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -134,76 +150,100 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
 
   const handleSend = useCallback(() => {
     if (inputText.trim().length > 0) {
-      handleSendMessage(inputText);
+      handleSendMessage();
     }
   }, [inputText]);
 
   const handleTextChange = useCallback((text: string) => {
-    setInputText(text);
-  }, []);
+    if (text.endsWith('\n\n')) {
+      setInputText('');
+      handleSendMessage();
+    } else {
+      setInputText(text);
+    }
+  }, [handleSendMessage]);
 
   const renderMessage = ({ item }: { item: ChatMessage }) => (
     <Message message={item as any} />
   );
 
+  // Add a simple thinking indicator
+  const renderFooter = () => {
+    if (isLoading) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: primativeColors['60'], fontFamily: theme.fonts.body }}>Thinking...</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
   const canSendMessage = inputText.trim().length > 0;
+
+  // Handle double enter (\n\n) to send in simulator
+  const handleInputKeyPress = (e: any) => {
+    if (e.nativeEvent.key === 'Enter') {
+      if (inputText.endsWith('\n')) {
+        handleSendMessage();
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.profileContainer}>
+        <TouchableOpacity onPress={() => setShowJournal(j => !j)} activeOpacity={0.7}>
+          <Image
+            source={require('../../assets/dad.png')}
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
+      </View>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <View style={styles.chatContainer}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.messagesList}
-            onContentSizeChange={handleContentSizeChange}
-            onLayout={handleLayout}
-            showsVerticalScrollIndicator={false}
-            automaticallyAdjustKeyboardInsets={true}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
-            contentInset={{ top: 60, bottom: 0, left: 0, right: 0 }}
-          />
-          <View style={styles.inputContainer}>
-            <AutoGrowingTextInput
-              style={styles.input}
-              value={inputText}
-              onChangeText={handleTextChange}
-              placeholder="Type a message..."
-              placeholderTextColor={theme.colors.text + '80'}
-              multiline
-              onSubmitEditing={() => {
-                if (canSendMessage) {
-                  handleSend();
-                }
-              }}
-              editable={!isLoading}
-              textColor={theme.colors.text}
+        {showJournal ? (
+          <JournalScreen />
+        ) : (
+          <View style={styles.chatScreenContent}>
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              renderItem={renderMessage}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.messagesList}
+              onContentSizeChange={handleContentSizeChange}
+              onLayout={handleLayout}
+              showsVerticalScrollIndicator={false}
+              automaticallyAdjustKeyboardInsets={true}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              ListFooterComponent={renderFooter}
             />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.sendButton,
-                  { opacity: canSendMessage && !isLoading ? 1 : 0.5 }
-                ]}
-                onPress={handleSend}
-                disabled={!canSendMessage || isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <MaterialCommunityIcons name="send" size={20} color="#fff" />
-                )}
-              </TouchableOpacity>
+            <View style={styles.inputRow}>
+              <View style={styles.bottomBarMask}/>
+              <AutoGrowingTextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={handleTextChange}
+                placeholder="Type a message..."
+                placeholderTextColor={primativeColors['70']}
+                multiline
+                onSubmitEditing={() => {
+                  if (canSendMessage) {
+                    handleSendMessage();
+                  }
+                }}
+                editable={!isLoading}
+                textColor={theme.colors.text}
+              />
             </View>
           </View>
-        </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

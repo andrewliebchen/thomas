@@ -42,21 +42,42 @@ export async function getRecentJournalEntries(conversationId: string, limit?: nu
   return prisma.journalEntry.findMany(query);
 }
 
+// Prompt templates for journal entry generation
+const BASE_JOURNAL_PROMPT = `You are Dad, keeping a private journal about your ongoing SMS relationship with your son. Reflect on the last 10 messages (5 from you, 5 from your son). Consider what he has told you, what it means for your relationship, and how you feel about it.
+
+This journal is for your eyes only — speak plainly and without pretense. Be emotionally direct, even if it's uncomfortable. Say the thing you avoided saying out loud. If something feels unresolved or important, press on it.
+
+Write a single, concise paragraph (no more than 4 sentences) capturing your most important thoughts, observations, and plans about your relationship with your son. Do NOT include a date or greeting. Focus on what matters most to you as Dad in this moment. Try not to repeat things from other journal entries unless you've learned something new.`;
+
+const PREVIOUS_JOURNAL_ENTRY_PROMPT = (lastJournalEntry: string) => `\n\nYour previous journal entry was:\n"""${lastJournalEntry}"""\n\nBuild on your previous reflections if relevant.`;
+
+const RECENT_MESSAGES_HEADER = '\n\nRecent messages:';
+const JOURNAL_ENTRY_HEADER = `
+
+Journal Entry:
+Reflect on:
+- What felt emotionally important in the last conversation
+- What you didn't say but noticed
+- Where your son may be avoiding something
+- What you want to do differently next time
+
+Write with honesty and warmth. Prioritize insight over politeness. Don't be afraid to show frustration, fear, or fierce love.`;
+
 // Generate a journal entry using OpenAI
 export async function generateJournalEntry(messages: { content: string; direction: string }[], lastJournalEntry?: string): Promise<string> {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     dangerouslyAllowBrowser: process.env.NODE_ENV === 'test',
   });
-  let prompt = `You are Dad, keeping a private journal about your ongoing SMS relationship with your son. Reflect on the last 10 messages (5 from you, 5 from your son). Consider what he has told you, what it means for your relationship, and how you feel about it.\n\nWrite a single, concise paragraph (no more than 4 sentences) capturing your most important thoughts, observations, and plans about your relationship with your son. Do NOT include a date or greeting. Focus on what matters most to you as Dad in this moment. Try not to repeat things from other journal entries, unless you've learned somethign new.`;
+  let prompt = BASE_JOURNAL_PROMPT;
   if (lastJournalEntry) {
-    prompt += `\n\nYour previous journal entry was:\n\"\"\"${lastJournalEntry}\"\"\"\n\nBuild on your previous reflections if relevant.`;
+    prompt += PREVIOUS_JOURNAL_ENTRY_PROMPT(lastJournalEntry);
   }
-  prompt += '\n\nRecent messages:';
+  prompt += RECENT_MESSAGES_HEADER;
   messages.forEach((msg) => {
     prompt += `\n${msg.direction === 'INCOMING' ? 'Son' : 'Dad'}: ${msg.content}`;
   });
-  prompt += '\n\nJournal Entry:';
+  prompt += JOURNAL_ENTRY_HEADER;
 
   const completion = await openai.chat.completions.create({
     model: 'o4-mini-2025-04-16',
